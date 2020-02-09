@@ -7,50 +7,50 @@ import CreateCourse from './components/CreateCourse'
 import UserSignOut from './components/UserSignOut';
 import UpdateCourse from './components/UpdateCourse';
 import Header from './components/Header';
+import Services from './components/Services';
+import  AuthContext  from './components/Context';
+
+
 import {
   Route,
-  BrowserRouter,
-  Switch,
-  Redirect
+  Switch
 } from 'react-router-dom';
 import './App.css';
 
 function App() {
-/*
-  // Create a request variable and assign a new XMLHttpRequest object to it.
-var request = new XMLHttpRequest()
 
-// Open a new connection, using the GET request on the URL endpoint
-request.open('GET', 'http://localhost:5000/api/courses', true)
-
-request.onload = function() {
-  var data = JSON.parse(this.response);
-  console.log(data);
-
-}
-
-// Send request
-request.send()
-*/
   return (
-        <div className="container">
+    <AuthContext.Provider value={Services}>
+        <div>
+        
           <Header/>
-          <div className="bounds">
-            <BrowserRouter>
+            
               <Switch>
-                <Route exact path='/' render={()=> <Redirect to='/courses' /> }/>
+                <Route exact path='/' component={Courses} />
+                
                 <Route exact path='/courses' component={Courses}/>
-                <Route exact path="/courses/create" component={CreateCourse} />
-                <Route exact path="/courses/:id/update" component={UpdateCourse} />
-                <Route path="/courses/:id" component={CourseDetails} />
+
                 <Route path='/signin' component={UserSignIn}/>
                 <Route path='/signup' component={UserSignUp}/>
                 <Route path='/signout' component = {UserSignOut}/>
+                <Route exact path="/courses/create" component={CreateCourse} />
+                <Route exact path="/courses/:id/delete" component={UpdateCourse} />
+                <Route exact path="/courses/:id/update" render={
+                    ({match})=>
+                      <React.Fragment>
+                        <UpdateCourse match={match} />
+                      </React.Fragment>
+                    } />
+                <Route path="/courses/:id" render={
+                    ({match})=>
+                      <React.Fragment>
+                        <CourseDetails match={match} />
+                      </React.Fragment>
+                    } />
               </Switch>
-            </BrowserRouter>
+              
             </div>
-        </div>
-         
+            </AuthContext.Provider>
 
   );
 }
