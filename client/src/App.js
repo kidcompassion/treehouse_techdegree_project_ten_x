@@ -7,6 +7,8 @@ import CreateCourse from './components/CreateCourse'
 import UserSignOut from './components/UserSignOut';
 import UpdateCourse from './components/UpdateCourse';
 import NotFound from './components/NotFound';
+import Forbidden from './components/Forbidden';
+import UnhandledError from './components/UnhandledError';
 import { Header } from './components/Header';
 import { Data } from './components/Data';
 
@@ -15,7 +17,8 @@ import PrivateRoute from './PrivateRoute';
 
 import {
   Route,
-  Switch
+  Switch,
+  Redirect
 } from 'react-router-dom';
 import './App.css';
 
@@ -44,19 +47,25 @@ function App(props) {
             <Switch>
               <Route exact path='/' component={CoursesWithContext} />
               <Route exact path='/courses' component={CoursesWithContext}/>
-              <Route path='/signin' component={UserSignInWithContext}/>
-              <Route path='/signup' component={UserSignUpWithContext}/>
-              <Route path='/signout' component = {UserSignOutWithContext}/>
+              <Route exact path='/signin' component={UserSignInWithContext}/>
+              <Route exact path='/signup' component={UserSignUpWithContext}/>
+              <Route exact path='/signout' component = {UserSignOutWithContext}/>
               <PrivateRouteWithContext exact path="/courses/create" component={CreateCourseWithContext} />
               <PrivateRouteWithContext exact path="/courses/:id/update" component={UpdateCourseWithContext} />
               <PrivateRouteWithContext exact path="/courses/:id/delete" component={UpdateCourseWithContext} />
-              <Route path="/courses/:id" render={
-                  ({match})=>
-                    <React.Fragment>
-                      <CourseDetailsWithContext match={match} />
-                    </React.Fragment>
-                  } />
+              
+              
+              <Route exact path="/courses/:id" component={CourseDetailsWithContext}/>
+                  
+              
+              
+                
+                <Route path="/notfound" component={NotFound} />
+                <Route path="/forbidden" component={Forbidden} />
+                <Route path="/error" component={UnhandledError} />
                 <Route component = {NotFound} />
+                <Redirect to="/notfound" />
+                
               </Switch>
           </div>
       

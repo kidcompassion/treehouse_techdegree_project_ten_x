@@ -34,7 +34,7 @@ class UserSignIn extends React.Component{
         event.preventDefault();
         // Run the API request to check if user exists
         this.props.context.actions.signIn(this.state);
-        this.props.history.push("/courses");
+        this.props.history.goBack();
     }
 
     handleCancel(event){

@@ -38,12 +38,26 @@ class UpdateCourse extends React.Component {
       let currentComponent = this;
       axios.get(`http://localhost:5000/api/courses/${currentCourseId}`)
           .then((response)=>{
-              
+            console.log(response);
+            
+            
+            
+            if(response.data != null){
+
+            if(response.data.User.id !== this.props.context.authenticatedUser.id){
+              console.log('forbidden');
+              this.props.history.push("/forbidden");
+            } else {
               currentComponent.setState({
                   
                   courseData: response.data,
                   
               });
+            }
+
+            } else{
+              this.props.history.push("/notfound");
+            }
 
               console.log(this.state.courseUpdate);
           })

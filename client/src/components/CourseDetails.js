@@ -25,11 +25,16 @@ class CourseDetails extends Component{
     
     axios.get(`http://localhost:5000/api/courses/${currentCourseId}`)
         .then((response)=>{
+          
+          if(response.data != null){
             currentComponent.setState({
                 courseData: response.data,
                 courseOwner: response.data.User,
                 materialsNeeded: this.formatList(response.data.materialsNeeded)
             });
+          } else{
+            this.props.history.push("/notfound");
+          }
         });
   }
 
