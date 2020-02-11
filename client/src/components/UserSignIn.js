@@ -1,82 +1,68 @@
 import React from 'react';
-import AuthContext from './Context/index';
-
-
-
+//
+//import { Data } from './Data';
 
 class UserSignIn extends React.Component{
+
     constructor(props){
+
         super(props)
 
         this.state = {
             emailAddress: '',
             password:'',
-            authKey:''
+            showErrors: false,
+            emailError: false,
+            passError: false,
         }
-    }
-
-
-    componentDidMount(){
-        
+        this.handleCancel = this.handleCancel.bind(this);
     }
 
     handleChange = (event) =>{
         const name = event.target.name;
         const value = event.target.value;
-        
-     //   console.log(name, value);
         this.setState({
-            authKey:'',
             [name]: value 
         });
     }
 
-    handleSubmit = (event) =>{
-        
-        try{
-            const getAuthHeader = this.props.value.services.signIn(this.state); // this is a service coming from the data file
-            this.setState({
-                authKey: getAuthHeader()
-            });
-            
-            
-
-        } catch(err){
-
-        }
-        
-        //https://stackoverflow.com/questions/44245588/how-to-send-authorization-header-with-axios
+    /**
+     * Handle Sign In Submit
+     * @param {*} event 
+     */
+    handleSubmit(event){
         event.preventDefault();
-
-        // what endpoint to send it to on first submit? 
-        // get/set headers
-        // save them as a cookie
-        
-/*
-        let webApiUrl = 'http://localhost:5000/api/';
-        let tokenStr = 'xxyyzz';
-        axios.get(webApiUrl, { headers: {"Authorization" : `Bearer ${tokenStr}`} });
-*/
-
-        //I think I have to set auth headers
-        console.log(this.state);
-
+        // Run the API request to check if user exists
+        this.props.context.actions.signIn(this.state);
+        this.props.history.push("/courses");
     }
 
-    render(){
+    handleCancel(event){
+        event.preventDefault();
+        this.props.history.push("/courses");
+      }
+      
 
-        
+    render(){
         return(
-            <AuthContext.Consumer>
-            {
-                (context)=>{
-                    
-                    return(
-                    <div className="bounds">
-             <div className="grid-33 centered signin">
-                <h1>Sign In</h1>
+            
+            <div className="bounds">
+                 <div className="grid-33 centered signin">
+                    <h1>Sign In</h1>
                     <div>
-                        <form onSubmit = {(e)=>{context.signIn(this.state); e.preventDefault()}}>
+
+                     {this.state.showErrors ?
+                        <div>
+                            <h2 className="validation--errors--label">Validation errors</h2>
+                            <div className="validation-errors">
+                            <ul>
+                                {this.state.emailError? <li>Problem with email</li> : null}
+                                {this.state.passError?<li>Problem with password</li> : null}
+                            </ul>
+                            </div>
+                        </div>
+                        :null}
+                        <form onSubmit = {(e)=>{this.handleSubmit(e)}}>
                         <input id="emailAddress" 
                                 name="emailAddress" 
                                 type="text" 
@@ -93,18 +79,21 @@ class UserSignIn extends React.Component{
                                 value={this.state.password}/ >
                         <div className ="grid-100 pad-bottom">
                             <button className="button" type="submit">Sign In</button>
+                            <button 
+                            className="button button-secondary" 
+                            type="button"
+                            onClick={this.handleCancel}>
+                                Cancel
+                            </button>
+                            
                         </div>
                         </form>
                     </div>
                 <p>&nbsp;</p>
               <p>Don't have a user account? <a href="sign-up.html">Click here</a> to sign up!</p>
             </div>
-            </div>);
-            
-                }
-            }
-            </AuthContext.Consumer>
-        );
+        </div>);
+        
     }
 }
 

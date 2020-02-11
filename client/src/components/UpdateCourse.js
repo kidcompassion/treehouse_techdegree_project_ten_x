@@ -8,28 +8,27 @@ class UpdateCourse extends React.Component {
     constructor(props){
       
         super(props);
-        console.log(this.props.match);
+        console.log(this.props);
         this.state = {
-          courseUpdates:{
-            title:{
-              value: ''
-            },
-            description:{
-              value: ''
-            },
-            estimatedTime:{
-              value: ''
-            },
-            materialsNeeded:{
-              value: ''
-            },
+          showErrors: false,
+          showTitle: false,
+          showDescription: false,
+          courseData:{},
+          courseUpdate:{
+            title:'',
+            description: '',
+            estimatedTime:'',
+            materialsNeeded:'',
+            userId: this.props.context.authenticatedUser.id
           }
+
           
         }
 
 
         this.handleChange = this.handleChange.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
+        this.handleCancel = this.handleCancel.bind(this);
 
     }
 
@@ -46,29 +45,25 @@ class UpdateCourse extends React.Component {
                   
               });
 
-              
+              console.log(this.state.courseUpdate);
           })
-          .then(console.log(currentComponent.state));
+          .then();
 
   }
 
     //https://medium.com/@agoiabeladeyemi/the-complete-guide-to-forms-in-react-d2ba93f32825
     handleChange(event){
-      const name = event.target.name;
-      const value = event.target.value;
-
-      this.setState({
-          showErrors: false,
-          titleError: false,
-          descriptionError: false,
-          courseUpdates: {
-            ...this.state.courseUpdates,
-            [name]: {
-              ...this.state.courseUpdates[name],
-              value
-            }
+      
+        const name = event.target.name;
+        const value = event.target.value;
+        
+        this.setState({
+          courseUpdate:{
+            ...this.state.courseUpdate,
+            [name]: value 
           }
-      });
+        });
+    
 
     }
 
@@ -79,7 +74,7 @@ handleSubmit(event){
   console.log(this.state.courseUpdates);
 
 
-  if(this.state.courseUpdates.title.value === ""){
+  if(this.state.courseUpdate.title.value === ""){
     console.log('nada');
     this.setState({
       showErrors: true,
@@ -87,42 +82,23 @@ handleSubmit(event){
     });
   }
 
-  if(this.state.courseUpdates.description.value === ""){
+  if(this.state.courseUpdate.description.value === ""){
     this.setState({
       showErrors: true,
       descriptionError:true
     });
   }
-  const options = {
-    url: 'http://localhost:5000/api/courses',
-    method: 'PUT',
-    headers: {
-      'Accept': 'application/json',
-      'Content-Type':'multipart/form-data'
-    },
-    data: {
-      title: this.state.courseUpdates.title,
-      description: this.state.courseUpdates.description,
-      estimatedTime: this.state.courseUpdates.estimatedTime,
-      materialsNeeded: this.state.courseUpdates.materialsNeeded,
-      userId: 3 //make curr user
-    }
-  };
-  
-  axios(options)
-    .then(response => {
-      console.log(response.status);
-    });
+
+  this.props.context.actions.updateCourse(this.state);
 }
 
-handleClick(event){
-  // Add redirect, possibly something to do with pushing the history
-
+handleCancel(event){
   event.preventDefault();
-
-  
-
+  this.props.history.push("/courses");
 }
+
+
+//if value is empty, set it to placeholder value
 
     render(){
         return(
@@ -151,8 +127,8 @@ handleClick(event){
                             type="text" 
                             onChange={this.handleChange}
                             className="input-title course--title--input" 
-                            placeholder="Course title..."
-                            value={this.state.courseUpdates.title.value} />
+                            placeholder={this.state.courseData.title}
+                            value={this.state.courseUpdate.title.value} />
                       </div>
                     </div>
             <div className="course--description">
@@ -161,8 +137,8 @@ handleClick(event){
                           name="description"
                           onChange={this.handleChange}
                           className="" 
-                          placeholder="Course description..."
-                          value={this.state.courseUpdates.description.value}>
+                          placeholder={this.state.courseData.description}
+                          value={this.state.courseUpdate.description.value}>
                 </textarea></div>
             </div>
           </div>
@@ -177,8 +153,8 @@ handleClick(event){
                             onChange={this.handleChange}
                             type="text" 
                             className="course--time--input"
-                            placeholder="Hours" 
-                            value={this.state.courseUpdates.estimatedTime.value}
+                            placeholder={this.state.courseData.estimatedTime}
+                            value={this.state.courseUpdate.estimatedTime.value}
                             /></div>
                 </li>
                 <li className="course--stats--list--item">
@@ -188,8 +164,8 @@ handleClick(event){
                               name="materialsNeeded"
                               onChange={this.handleChange} 
                               className="" 
-                              placeholder="List materials..."
-                              value={this.state.courseUpdates.materialsNeeded.value}
+                              placeholder={this.state.courseData.materialsNeeded}
+                              value={this.state.courseUpdate.materialsNeeded.value}
                               >
                       </textarea>
                               </div>
@@ -205,7 +181,7 @@ handleClick(event){
             <button 
               className="button button-secondary" 
               type="button"
-              onClick={this.handleClick}>
+              onClick={this.handleCancel}>
                 Cancel
               </button>
             

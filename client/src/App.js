@@ -6,10 +6,12 @@ import UserSignUp from './components/UserSignUp';
 import CreateCourse from './components/CreateCourse'
 import UserSignOut from './components/UserSignOut';
 import UpdateCourse from './components/UpdateCourse';
-import Header from './components/Header';
-import Services from './components/Services';
-import  AuthContext  from './components/Context';
+import NotFound from './components/NotFound';
+import { Header } from './components/Header';
+import { Data } from './components/Data';
 
+import { withContext }  from './components/Context';
+import PrivateRoute from './PrivateRoute';
 
 import {
   Route,
@@ -17,40 +19,47 @@ import {
 } from 'react-router-dom';
 import './App.css';
 
-function App() {
 
+const HeaderWithContext = withContext(Header);
+const CoursesWithContext = withContext(Courses);
+const UpdateCourseWithContext = withContext(UpdateCourse);
+const CreateCourseWithContext = withContext(CreateCourse);
+const UserSignOutWithContext = withContext(UserSignOut);
+const UserSignUpWithContext = withContext(UserSignUp);
+const UserSignInWithContext = withContext(UserSignIn);
+const CourseDetailsWithContext = withContext(CourseDetails);
+const PrivateRouteWithContext = withContext(PrivateRoute);
+
+const data = new Data();
+
+function App(props) {
+  //console.log(props.context.authenticatedUser);
+  
   return (
-    <AuthContext.Provider value={Services}>
+    
         <div>
+          
+          <HeaderWithContext />
         
-          <Header/>
-            
-              <Switch>
-                <Route exact path='/' component={Courses} />
-                
-                <Route exact path='/courses' component={Courses}/>
-
-                <Route path='/signin' component={UserSignIn}/>
-                <Route path='/signup' component={UserSignUp}/>
-                <Route path='/signout' component = {UserSignOut}/>
-                <Route exact path="/courses/create" component={CreateCourse} />
-                <Route exact path="/courses/:id/delete" component={UpdateCourse} />
-                <Route exact path="/courses/:id/update" render={
-                    ({match})=>
-                      <React.Fragment>
-                        <UpdateCourse match={match} />
-                      </React.Fragment>
-                    } />
-                <Route path="/courses/:id" render={
-                    ({match})=>
-                      <React.Fragment>
-                        <CourseDetails match={match} />
-                      </React.Fragment>
-                    } />
+            <Switch>
+              <Route exact path='/' component={CoursesWithContext} />
+              <Route exact path='/courses' component={CoursesWithContext}/>
+              <Route path='/signin' component={UserSignInWithContext}/>
+              <Route path='/signup' component={UserSignUpWithContext}/>
+              <Route path='/signout' component = {UserSignOutWithContext}/>
+              <PrivateRouteWithContext exact path="/courses/create" component={CreateCourseWithContext} />
+              <PrivateRouteWithContext exact path="/courses/:id/update" component={UpdateCourseWithContext} />
+              <PrivateRouteWithContext exact path="/courses/:id/delete" component={UpdateCourseWithContext} />
+              <Route path="/courses/:id" render={
+                  ({match})=>
+                    <React.Fragment>
+                      <CourseDetailsWithContext match={match} />
+                    </React.Fragment>
+                  } />
+                <Route component = {NotFound} />
               </Switch>
-              
-            </div>
-            </AuthContext.Provider>
+          </div>
+      
 
   );
 }

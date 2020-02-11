@@ -1,9 +1,13 @@
-import React from 'react';
+const UserSignOut = (props) => {
 
-
-const UserSignOut = () => {
-    return(
-        <h2>Signout</h2>
-    )
+    // Run the signout function, which clears localstorage and context state    
+    props.context.actions.signOut();
+    
+    // redirect user to the signin
+    props.history.push("/courses");
+    
+    //Return nothing, since we're redirecting
+    return(null)
 }
+
 export default UserSignOut;

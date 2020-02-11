@@ -8,24 +8,16 @@ class CreateCourse extends React.Component {
     constructor(props){
       
         super(props);
-        console.log(this.props.match);
+        console.log(this.props);
         this.state = {
           showErrors: false,
           showTitle: false,
           showDescription: false,
           courseCreate:{
-            title:{
-              value: ''
-            },
-            description:{
-              value: ''
-            },
-            estimatedTime:{
-              value: ''
-            },
-            materialsNeeded:{
-              value: ''
-            },
+            title:'',
+            description: '',
+            estimatedTime:'',
+            materialsNeeded:''
           }
           
         }
@@ -33,6 +25,7 @@ class CreateCourse extends React.Component {
 
         this.handleChange = this.handleChange.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
+        this.handleCancel = this.handleCancel.bind(this);
 
     }
 
@@ -40,55 +33,38 @@ class CreateCourse extends React.Component {
     handleChange(event){
       const name = event.target.name;
       const value = event.target.value;
-
+      
       this.setState({
-          courseCreate: {
-            ...this.state.courseCreate,
-            [name]: {
-              ...this.state.courseCreate[name],
-              value
-            }
-          }
+        courseCreate:{
+          ...this.state.courseCreate,
+          [name]: value 
+        }
       });
-console.log(this.state);
+
     }
 
 handleSubmit(event){
   
   event.preventDefault();
   //https://stackoverflow.com/questions/47630163/axios-post-request-to-send-form-data
-  console.log(this.state.courseCreate);
+  
 
-  const options = {
-    url: 'http://localhost:5000/api/courses',
-    method: 'POST',
-    headers: {
-      'Accept': 'application/json',
-      'Content-Type':'multipart/form-data',
-      'Authorization': 'this is wherethetokenshouldgo'
-    },
-    data: {
+  const data = {
       title: this.state.courseCreate.title,
       description: this.state.courseCreate.description,
       estimatedTime: this.state.courseCreate.estimatedTime,
       materialsNeeded: this.state.courseCreate.materialsNeeded,
-      userId: 3
+      userId: this.props.context.authenticatedUser.id
     }
-  };
-  
-  axios(options)
-    .then(response => {
-      console.log(response.status);
-    });
+
+    console.log(data);
+    this.props.context.actions.createCourse(data);
+ 
 }
 
-handleClick(event){
-  // Add redirect, possibly something to do with pushing the history
-
+handleCancel(event){
   event.preventDefault();
-
-  
-
+  this.props.history.push("/courses");
 }
 
     render(){
@@ -167,12 +143,12 @@ handleClick(event){
           <div className="grid-100 pad-bottom">
             <button className="button" 
                     type="submit">
-            Update Course</button>
+            Create Course</button>
             
             <button 
               className="button button-secondary" 
               type="button"
-              onClick={this.handleClick}>
+              onClick={this.handleCancel}>
                 Cancel
               </button>
             

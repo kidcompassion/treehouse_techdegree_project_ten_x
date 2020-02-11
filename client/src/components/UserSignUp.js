@@ -1,5 +1,5 @@
 import React from 'react';
-//import { WithContext } from './Context/';
+import {Data} from './Data';
 
 class UserSignUp extends React.Component{
 
@@ -11,14 +11,18 @@ class UserSignUp extends React.Component{
                 lastName:"", 
                 emailAddress:"",
                 password:"",
-                confirmPassword:""
+                confirmPassword:"",
+                data: new Data()
+                
         }
+        
     
 
     
 
         this.handleChange = this.handleChange.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
+        this.handleCancel = this.handleCancel.bind(this);
     }
 
     
@@ -35,7 +39,7 @@ class UserSignUp extends React.Component{
         const name = event.target.name;
         const value = event.target.value;
        
-        console.log(name, value);
+      //  console.log(name, value);
         this.setState({
             [name]: value 
         });
@@ -45,16 +49,19 @@ class UserSignUp extends React.Component{
     handleSubmit = (event) =>{
         
          event.preventDefault();
-         this.props.value.data.createUser(this.state); // this is a service coming from the data file
+         this.props.context.actions.createUser(this.state); // this is a service coming from the data file
      }
 
-    cancel = () => {
-        this.props.history.push('/');
+     handleCancel(event){
+        event.preventDefault();
+        this.props.history.push("/courses");
       }
+      
 
     render(){
-        return(
-            <div className="bounds">
+        
+                return(
+                <div className="bounds">
                 <div className="grid-33 centered signin">
                 <h1>Sign Up</h1>
                 
@@ -108,13 +115,20 @@ class UserSignUp extends React.Component{
                                 </div>
                     <div className="grid-100 pad-bottom">
                         <button className="button" type="submit">Sign Up</button>
-                       <button className="button button-secondary">Cancel</button></div>
+                        <button 
+              className="button button-secondary" 
+              type="button"
+              onClick={this.handleCancel}>
+                Cancel
+              </button></div>
                     </form>
                 </div>
                 <p>&nbsp;</p>
                 <p>Already have a user account? <a href="sign-in.html">Click here</a> to sign in!</p>
                 </div>
             </div>
+                
+           
         );
     }
 }

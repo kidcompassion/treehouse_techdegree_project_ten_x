@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import axios from 'axios';
+import Cookies from 'js-cookie';
 import {
     NavLink,
     withRouter
@@ -12,10 +13,12 @@ class Courses extends Component{
     constructor(props){
         super(props);
         this.state = {
-            courses:[]
+            courses:[],
+            isAuth: ''
         }
         
-       
+        
+
     }
 
     componentDidMount(){
@@ -25,10 +28,13 @@ class Courses extends Component{
             .then((response)=>{
              //   console.log(response.data);
                 currentComponent.setState({
-                    courses: response.data
+                    courses: response.data,
+                    isAuth: Cookies.get('isAuth')
                 });
             });
+
     }
+
 
 
 
