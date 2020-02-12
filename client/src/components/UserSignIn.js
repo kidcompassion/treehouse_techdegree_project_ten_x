@@ -1,23 +1,27 @@
 import React from 'react';
-//
-//import { Data } from './Data';
+import { Link } from 'react-router-dom';
+
 
 class UserSignIn extends React.Component{
 
     constructor(props){
-
         super(props)
-
+        console.log(props);
         this.state = {
+            authenticatedUser:{},
             emailAddress: '',
             password:'',
-            showErrors: false,
-            emailError: false,
-            passError: false,
+            errors: null
         }
+        this.handleChange = this.handleChange.bind(this);
+        this.handleSubmit = this.handleSubmit.bind(this);
         this.handleCancel = this.handleCancel.bind(this);
     }
 
+    /**
+     * Add form values to state
+     * TO DO: inline field validation
+     */
     handleChange = (event) =>{
         const name = event.target.name;
         const value = event.target.value;
@@ -27,40 +31,46 @@ class UserSignIn extends React.Component{
     }
 
     /**
-     * Handle Sign In Submit
-     * @param {*} event 
+     * Handle user signin 
+     * TO DO: 
+     * upon successful sign up, trigger a welcome message in SignIn component indicating user should sign up with new credentials
+     * show inline error msgs (not required for project, but still should do it)
      */
+
     handleSubmit(event){
         event.preventDefault();
-        // Run the API request to check if user exists
         this.props.context.actions.signIn(this.state);
-        this.props.history.goBack();
+        // Redirect user to page they were on when they clicked sign in
+        this.props.history.push('/courses'); 
     }
 
+    /**
+     * If user cancels, send them back to the class list
+     * @param {*} event 
+     */
     handleCancel(event){
         event.preventDefault();
         this.props.history.push("/courses");
-      }
+    }
       
-
     render(){
         return(
-            
             <div className="bounds">
-                 <div className="grid-33 centered signin">
+                <div className="grid-33 centered signin">
                     <h1>Sign In</h1>
-                    <div>
-
-                     {this.state.showErrors ?
-                        <div>
-                            <h2 className="validation--errors--label">Validation errors</h2>
-                            <div className="validation-errors">
-                            <ul>
-                                {this.state.emailError? <li>Problem with email</li> : null}
-                                {this.state.passError?<li>Problem with password</li> : null}
-                            </ul>
+                    <div>   
+                        {/* If errors exist, loop through and render them*/}
+                        {this.state.errors ?
+                            <div>
+                                <h2 className="validation--errors--label">Validation errors</h2>
+                                <div className="validation-errors">
+                                    <ul>
+                                        {this.state.errors.map((error, index)=>{
+                                            return(<li key={index}>{error}</li>)
+                                        })}
+                                    </ul>
+                                </div>
                             </div>
-                        </div>
                         :null}
                         <form onSubmit = {(e)=>{this.handleSubmit(e)}}>
                         <input id="emailAddress" 
@@ -85,15 +95,13 @@ class UserSignIn extends React.Component{
                             onClick={this.handleCancel}>
                                 Cancel
                             </button>
-                            
                         </div>
                         </form>
                     </div>
                 <p>&nbsp;</p>
-              <p>Don't have a user account? <a href="sign-up.html">Click here</a> to sign up!</p>
+              <p>Don't have a user account? <Link to="/signup">Click here</Link> to sign up!</p>
             </div>
         </div>);
-        
     }
 }
 

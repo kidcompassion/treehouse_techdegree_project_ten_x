@@ -10,15 +10,14 @@ import NotFound from './components/NotFound';
 import Forbidden from './components/Forbidden';
 import UnhandledError from './components/UnhandledError';
 import { Header } from './components/Header';
-import { Data } from './components/Data';
+
 
 import { withContext }  from './components/Context';
 import PrivateRoute from './PrivateRoute';
 
 import {
   Route,
-  Switch,
-  Redirect
+  Switch
 } from 'react-router-dom';
 import './App.css';
 
@@ -32,8 +31,11 @@ const UserSignUpWithContext = withContext(UserSignUp);
 const UserSignInWithContext = withContext(UserSignIn);
 const CourseDetailsWithContext = withContext(CourseDetails);
 const PrivateRouteWithContext = withContext(PrivateRoute);
+const NotFoundWithContext = withContext(NotFound);
+const ForbiddenWithContext = withContext(Forbidden);
+const UnhandledErrorWithContext = withContext(UnhandledError);
 
-const data = new Data();
+
 
 function App(props) {
   //console.log(props.context.authenticatedUser);
@@ -60,11 +62,12 @@ function App(props) {
               
               
                 
-                <Route path="/notfound" component={NotFound} />
-                <Route path="/forbidden" component={Forbidden} />
-                <Route path="/error" component={UnhandledError} />
-                <Route component = {NotFound} />
-                <Redirect to="/notfound" />
+                <Route path="/notfound" component={NotFoundWithContext} />
+             
+                <Route path="/forbidden" component={ForbiddenWithContext} />
+                <Route path="/error" component={UnhandledErrorWithContext} />
+                <Route component = {NotFoundWithContext} />
+                
                 
               </Switch>
           </div>

@@ -8,11 +8,9 @@ class UpdateCourse extends React.Component {
     constructor(props){
       
         super(props);
-        console.log(this.props);
+       // console.log(this.props);
         this.state = {
-          showErrors: false,
-          showTitle: false,
-          showDescription: false,
+          currId:'',
           courseData:{},
           courseUpdate:{
             title:'',
@@ -20,9 +18,9 @@ class UpdateCourse extends React.Component {
             estimatedTime:'',
             materialsNeeded:'',
             userId: this.props.context.authenticatedUser.id
-          }
-
-          
+          },
+          errors: null,
+          data: null
         }
 
 
@@ -35,23 +33,24 @@ class UpdateCourse extends React.Component {
 
     componentDidMount(){
       const currentCourseId = this.props.match.params.id;
+      this.setState({
+        currId: currentCourseId
+      });
       let currentComponent = this;
       axios.get(`http://localhost:5000/api/courses/${currentCourseId}`)
           .then((response)=>{
-            console.log(response);
+          //  console.log(response);
             
             
             
             if(response.data != null){
 
             if(response.data.User.id !== this.props.context.authenticatedUser.id){
-              console.log('forbidden');
+              
               this.props.history.push("/forbidden");
             } else {
               currentComponent.setState({
-                  
                   courseData: response.data,
-                  
               });
             }
 
@@ -59,7 +58,7 @@ class UpdateCourse extends React.Component {
               this.props.history.push("/notfound");
             }
 
-              console.log(this.state.courseUpdate);
+             // console.log(this.state.courseUpdate);
           })
           .then();
 
@@ -84,26 +83,23 @@ class UpdateCourse extends React.Component {
 handleSubmit(event){
   
   event.preventDefault();
-  //https://stackoverflow.com/questions/47630163/axios-post-request-to-send-form-data
-  console.log(this.state.courseUpdates);
-
-
-  if(this.state.courseUpdate.title.value === ""){
-    console.log('nada');
-    this.setState({
-      showErrors: true,
-      titleError:true
-    });
+  const encodedCredentials = localStorage.getItem('authHeader');
+  const updateCourse =  axios.put(`http://localhost:5000/api/courses/${this.state.currId}`, this.state.courseUpdate, {headers: {"Authorization" : `Basic ${encodedCredentials}`} });
+  
+  updateCourse.then(                
+    (response) => { 
+      this.setState({data: response.data});
+    }
+  ).catch(
+    (err)=>{ 
+      if(err.response.status === 500){
+      this.props.history.push('/error')
+  }else {
+      this.setState({errors: err.response.data.errors});
   }
+    }
+  );
 
-  if(this.state.courseUpdate.description.value === ""){
-    this.setState({
-      showErrors: true,
-      descriptionError:true
-    });
-  }
-
-  this.props.context.actions.updateCourse(this.state);
 }
 
 handleCancel(event){
@@ -116,20 +112,22 @@ handleCancel(event){
 
     render(){
         return(
+          <div className="grid-100">
       <div className="bounds course--detail">
       <h1>Update Course</h1>
       <div>
-        {this.state.showErrors ?
-          <div>
-            <h2 className="validation--errors--label">Validation errors</h2>
-            <div className="validation-errors">
+        {this.state.errors ?
+          <div className="validation-errors">
               <ul>
-                {this.state.titleError? <li>Please provide a value for "Title"</li> : null}
-                {this.state.descriptionError?<li>Please provide a value for "Description"</li> : null}
+                {this.state.errors.map((error, index)=>{
+                    return(<li key={index}>{error}</li>)
+                })
+                }
               </ul>
             </div>
-          </div>
+            
           :null}
+
         <form onSubmit={this.handleSubmit}>
           <div className="grid-66">
 
@@ -201,6 +199,7 @@ handleCancel(event){
             
             </div>
       </form></div>
+    </div>
     </div>
         );
     }

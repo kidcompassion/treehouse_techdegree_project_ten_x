@@ -5,29 +5,22 @@ import {
 import axios from 'axios';
 
 class CreateCourse extends React.Component {
-    constructor(props){
-      
-        super(props);
-        console.log(this.props);
-        this.state = {
-          showErrors: false,
-          showTitle: false,
-          showDescription: false,
-          courseCreate:{
-            title:'',
-            description: '',
-            estimatedTime:'',
-            materialsNeeded:''
-          }
-          
-        }
-
-
-        this.handleChange = this.handleChange.bind(this);
-        this.handleSubmit = this.handleSubmit.bind(this);
-        this.handleCancel = this.handleCancel.bind(this);
-
+  constructor(props){  
+    super(props);
+    this.state = {
+      courseCreate:{
+        title:'',
+        description: '',
+        estimatedTime:'',
+        materialsNeeded:''
+      },
+      errors: null,
+      data: null
     }
+    this.handleChange = this.handleChange.bind(this);
+    this.handleSubmit = this.handleSubmit.bind(this);
+    this.handleCancel = this.handleCancel.bind(this);
+  }
 
     //https://medium.com/@agoiabeladeyemi/the-complete-guide-to-forms-in-react-d2ba93f32825
     handleChange(event){
@@ -44,22 +37,40 @@ class CreateCourse extends React.Component {
     }
 
 handleSubmit(event){
-  
-  event.preventDefault();
-  //https://stackoverflow.com/questions/47630163/axios-post-request-to-send-form-data
-  
+  event.preventDefault(); 
 
   const data = {
-      title: this.state.courseCreate.title,
-      description: this.state.courseCreate.description,
-      estimatedTime: this.state.courseCreate.estimatedTime,
-      materialsNeeded: this.state.courseCreate.materialsNeeded,
-      userId: this.props.context.authenticatedUser.id
-    }
+    "title": this.state.courseCreate.title,
+    "description": this.state.courseCreate.description,
+    "estimatedTime": this.state.courseCreate.estimatedTime,
+    "materialsNeeded": this.state.courseCreate.materialsNeeded,
+    "userId": this.props.context.authenticatedUser.id
+  }
+  
+    const encodedCredentials = localStorage.getItem('authHeader');
+    const createCourse =  axios.post('http://localhost:5000/api/courses', data, {headers: {"Authorization" : `Basic ${encodedCredentials}`} });
+    
+    createCourse.then(                
+      (response) => { 
+        this.setState({data: response.data});
+        this.props.history.push('/courses');
+      }
+    ).catch(
+      (err)=>{
+        if(err.response.status === 500){
+          this.props.history.push('/error')
+      }else {
+          this.setState({errors: err.response.data.errors});
+      }
+      }
+    );
 
-    console.log(data);
-    this.props.context.actions.createCourse(data);
- 
+    
+  
+
+
+
+   
 }
 
 handleCancel(event){
@@ -69,16 +80,19 @@ handleCancel(event){
 
     render(){
         return(
+          <div className="grid-100">
       <div className="bounds course--detail">
       <h1>Create Course</h1>
       <div>
-      {this.state.showErrors ?
+      {this.state.errors ?
           <div>
             <h2 className="validation--errors--label">Validation errors</h2>
             <div className="validation-errors">
               <ul>
-                {this.state.titleError? <li>Please provide a value for "Title"</li> : null}
-                {this.state.descriptionError?<li>Please provide a value for "Description"</li> : null}
+                {this.state.errors.map((error, index)=>{
+                    return(<li key={index}>{error}</li>)
+                })
+                }
               </ul>
             </div>
           </div>
@@ -154,6 +168,7 @@ handleCancel(event){
             
             </div>
       </form></div>
+      </div>
     </div>
         );
     }

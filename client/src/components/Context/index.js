@@ -1,33 +1,32 @@
 import React, { Component } from 'react';
 import axios from 'axios';
-import { Data } from '../Data';
+
 
 const Context = React.createContext(); 
 
 export class Provider extends Component {
 
-  
-
   constructor() {
     super();
-    this.data = new Data();
+    
     this.state = {
       authenticatedUser: JSON.parse(localStorage.getItem('authenticatedUser')) || null
     };
+    this.errorHandling = this.errorHandling.bind(this);
   }
 
   render() {
     const { authenticatedUser } = this.state;
     const value = {
       authenticatedUser,
-      data: this.data,
       actions: {
         createUser: this.createUser,
         signIn: this.signIn,
         signOut: this.signOut,
         createCourse: this.createCourse,
         updateCourse: this.updateCourse,
-        deleteCourse: this.deleteCourse
+        deleteCourse: this.deleteCourse,
+        errorHandling: this.errorHandling
       },
     };
     return (
@@ -38,46 +37,93 @@ export class Provider extends Component {
   }
 
 
+  /**
+   * Context Methods
+   */
 
-  createUser = (user) =>{
-    axios.post('http://localhost:5000/api/users', user)
-        .then( errors => {
-            if ( errors.length ) {
-            console.log(errors);
-            } else {
-            console.log(`${user.firstName} ${ user.lastName} is successfully signed up and authenticated!`);
-            }
-        })
-        .catch( err => {
-            console.log(err);
-        });  
-    };
   
-
+  
   signIn = ( user )=>{
-     // console.log(user);
-     let currentComponent = this;
-      const encodedCredentials = btoa(`${user.emailAddress}:${user.password}`);
-      const authorized = axios.get('http://localhost:5000/api/users', { user, headers: {"Authorization" : `Basic ${encodedCredentials}`} });
+     
+    // Encode form values
+    const encodedCredentials = btoa(`${user.emailAddress}:${user.password}`);
+    // Set encoded values as authorization header in login request
+    const authorized = axios.get('http://localhost:5000/api/users', { user, headers: {"Authorization" : `Basic ${encodedCredentials}`} });
+    
+    authorized.then(                
+        (response) => { 
+            // once logged in, save user data in localStorage
+            localStorage.setItem('authenticatedUser', JSON.stringify(response.data));
+            // save encoded credentials for use in other API calls
+            localStorage.setItem('authHeader', encodedCredentials);
+            // Add authenticated user to the current state
+            
+            //this.setState({authenticatedUser: response.data});
+        }
+    ).catch(
+        (err)=>{
+            // If error, log it to the console
+            console.log(err.response.data.message);
+            // If server error, redirect to expected error msg
+            if(err.response.status === 500){
+                this.props.history.push('/error')
+            } else { // else show inline validation errors
+                this.setState({errors: [err.response.data.message]});
+            }
+        }
+    )
+}
+
+
+      /**
+       * 
+       */
+      signOut = () =>{
+        let currentComponent = this;
       
-      //If authorized, add a cookie and store the encoded credentials for Contex
-      authorized.then(function (response) {
-          console.log('async response', response);
-          localStorage.setItem('authenticatedUser', JSON.stringify(response.data));
-          localStorage.setItem('authHeader', encodedCredentials);
-          currentComponent.setState({authenticatedUser: response.data})
-       
-        })
-      //else, log the error
-        .catch(function (error) {
-          console.log(error);
-        })
-      }  
+        localStorage.removeItem('authenticatedUser');
+        currentComponent.setState({authenticatedUser: null});   
+      }
+
+      createUser = (user) =>{
+        axios.post('http://localhost:5000/api/users', user)
+            .then( errors => {
+                if ( errors.length ) {
+                console.log(errors);
+                } else {
+                console.log(`${user.firstName} ${ user.lastName} is successfully signed up and authenticated!`);
+                }
+            })
+            .catch( (err) => {
+              console.log(err.response);
+              if(err.response.status === 500){
+                this.props.history.push('/error')
+            }else {
+              this.setState({errors: err.response.data.errors});
+            }
+            })  
+        };
+      
 
 
       createCourse = (courseDetails) =>{
+     //   console.log(courseDetails);
+     let payload;
         const encodedCredentials = localStorage.getItem('authHeader');
-        axios.post('http://localhost:5000/api/courses',  courseDetails, {headers: {"Authorization" : `Basic ${encodedCredentials}`} });
+       const createCourse =  axios.post('http://localhost:5000/api/courses', courseDetails, {headers: {"Authorization" : `Basic ${encodedCredentials}`} });
+                    createCourse.then( 
+                      
+                      (response) => { 
+                        payload = response;
+                        console.log(response);
+                       }
+                    ).catch(
+                      (err)=>{
+                        console.log(err.response.data.errors);
+                        payload =  err.response.data.errors;
+                      }
+                    )
+                return payload;
       }
 
       updateCourse = (courseDetails) =>{
@@ -92,55 +138,34 @@ export class Provider extends Component {
         axios.delete(`http://localhost:5000/api/courses/${courseDetails.courseData.id}`, {headers: {"Authorization" : `Basic ${encodedCredentials}`} });
       }
   
-      signOut = () =>{
-        let currentComponent = this;
-        console.log('contextsignout');
-        localStorage.removeItem('authenticatedUser');
-        currentComponent.setState({authenticatedUser: null});
-       /* let currentComponent = this;
-        currentComponent.setState({authenticatedUser: null});
-        localStorage.removeItem('authenticatedUser');*/
-        
+      
+
+      errorHandling = (error, state) => {
+          // Handling axios errors 
+          // https://stackoverflow.com/questions/9156176/what-is-the-difference-between-throw-new-error-and-throw-someobject
+          if(error.response){
+            state.setState({
+              errors: error.response
+            });
+            // Request made and server responded
+              console.log(error.response.data);
+              console.log(error.response.status);
+              console.log(error.response.headers);
+             // props.history.push("/error");
+            } else if (error.request) {
+              // The request was made but no response was received
+              console.log(error.request);
+            } else {
+              // Something happened in setting up the request that triggered an Error
+              console.log('Error', error.message);
+            }
       }
 
 
 
 }
 
-    /*
-console.log('sigin');
-
-    setTimeout(()=>{ //this forces header to rerender. updating state in context triggers it.
-      xthis.setState({authenticatedUser: {blerep: 'bloop'}})
-    }, 3000);
-*/
-
-    
-
-
-  //  console.log(this.authenticatedUser);
-    //return this.data.getUser(user)
-
-
-  
-
-  /*
-  signIn = async (username, password) => {
-    const user = await this.data.getUser(username, password);
-    if (user !== null) {
-      this.setState(() => {
-        return {
-          authenticatedUser: user,
-        };
-      });
-      const cookieOptions = {
-        expires: 1 // 1 day
-      };
-      Cookies.set('authenticatedUser', JSON.stringify(user), {cookieOptions});
-    }
-    return user;
-  }
-*/
+   
 
 
 export const Consumer = Context.Consumer;
